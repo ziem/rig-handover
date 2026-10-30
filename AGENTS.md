@@ -28,7 +28,34 @@ Read first: `docs/vision.md`, `docs/styleguide.md`. Decisions: `docs/adr/`.
    ```
 
 5. An issue is closed only when its "Done when" holds. If it can't hold yet, leave it open and
-   say what it waits on.
+   say what it waits on. A step that waits on someone else (a reviewer looking) stays open until
+   they have. `closes #n` in a commit message closes the issue on push, so leave it out of
+   commits for such an issue and close it by hand with the closing comment.
+
+### What every issue carries
+
+- First line `Source: plan.md § <n>`, label `plan:morning-digest` (the plan's name), then
+  `## Scope`, `## Done when`, `## Blocked by` (real `#n`, issues created in dependency order)
+  and `## Worker` (which model should take it).
+- Commit `src/<feature>/types.ts` before the parts that build on it, so parallel workers can start.
+
+### Workers
+
+- Worktree workers (`isolation: worktree`) may be unable to run git. Read their diff in the
+  worktree, apply it on `main` yourself, and run tests and typecheck before you push.
+- `.claude/worktrees` is git-ignored. Run vitest with `--exclude '.claude/**'`, or it also runs the
+  worktrees' copies of the tests.
+- No `pnpm` on the machine: `npm install --no-package-lock` works and adds no lockfile.
+
+## Previews
+
+- `npm run save-preview <night> <out>` saves `/digest/<night>` as one HTML file (default `var/`,
+  ignored by git). Unset the marker for the clean copy: `LANE_MARKER= npm run save-preview ...`.
+- Host: Netlify (`npx netlify-cli deploy --prod --dir <dir> --site <site id>`). Deploy from a
+  folder outside the repo. Look up the id with `sites:list --json`; the site name alone fails.
+- Every deploy keeps its own address. After taking the marker off, delete the old deploy
+  (`netlify api deleteDeploy`) and fetch both addresses to check the marker is gone (ADR 0003).
+- Check the public link by fetching it before you send it to a reviewer.
 
 ## Skills
 
